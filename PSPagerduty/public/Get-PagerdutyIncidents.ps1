@@ -29,7 +29,7 @@ function Get-PagerdutyIncidents {
    param(
         # View only Triggerd incidents
         [Parameter(Mandatory=$false)]
-        [switch]$Triggerd,
+        [switch]$Triggered,
 
         # View only Acknowledged incidents
         [Parameter(Mandatory=$false)]
@@ -39,35 +39,42 @@ function Get-PagerdutyIncidents {
         [Parameter(Mandatory=$false)]
         [switch]$Resolved,
 
-        # The Subdomain of your pager duty account
-        [Parameter(Mandatory=$true)]
-        [string]$PagerDutySubDomain,
-
         # API key for your PagerDuty account
         [Parameter(Mandatory=$true)]
-        [string]$APIKey
+        [string]$APIKey,
+        
+        # Timezone, default is UTC, will work in most cases
+        [Parameter(Mandatory=$false)]
+        [string]$time_zone = 'UTC'
+
     )
         
     $query = $null
    
    if($Resolved)
    {
-       $query = '?status=resolved'
+       $query = '?statuses%5B%5D=resolved'
    }
 
    if($Acknowledged)
    {
-       $query = '?status=acknowledged'
+       $query = '?statuses%5B%5D=acknowledged'
    }
 
    if($Triggerd)
    {
-       $query = '?status=triggered'
+       $query = '?statuses%5B%5D=triggered'
    }
 
-   $results = Invoke-RestMethod -Uri ('https://' + $PagerDutySubDomain + '.pagerduty.com/api/v1/incidents' + $query) -method Get -ContentType "application/json" -Headers @{"Authorization"=("Token token=" + $APIKey)}
+   $Headers = @{
    
-   # Clean the OutPut
+        'Accept' = 'application/vnd.pagerduty+json;version=2'
+        'Authorization' = "Token token=$APIKey"
+   
+   }  
+
+   $results = Invoke-RestMethod -Uri ('https://' + 'api.pagerduty.com/incidents' +$query + "&time_zone=$time_zone") -method GET -ContentType 'application/json' -Headers $Headers
+   
    $results.incidents | Select-Object incident_number,incident_key,status,trigger_summary_data
 
 }
