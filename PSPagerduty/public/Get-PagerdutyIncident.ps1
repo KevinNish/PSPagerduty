@@ -24,49 +24,111 @@ function Get-PagerdutyIncident {
        BASE MODULE TEMPLATE
    
    #>
-   [cmdletbinding()]
-   [alias('Get-Incident')]
+   
+   [cmdletbinding(DefaultParameterSetName='Default')]
+   [alias('Get-Incidents')]
 
    param(
-        # View only Triggerd incidents
-        [Parameter(Mandatory=$false)]
-        [switch]$Triggered,
-
-        # View only Acknowledged incidents
-        [Parameter(Mandatory=$false)]
-        [switch]$Acknowledged,
-           
-        # View only Resolved incidents
-        [Parameter(Mandatory=$false)]
-        [switch]$Resolved,
-
         # API key for your PagerDuty account
         [Parameter(Mandatory=$true)]
         [string]$APIKey,
         
         # Timezone, default is UTC, will work in most cases
         [Parameter(Mandatory=$false)]
-        [string]$time_zone = 'UTC'
+        [string]$Timezone,
+
+        #Filter by events associated with specific Service IDs
+        [Parameter(Mandatory=$false)]
+        [array]$ServiceIDs,
+
+        #Filter by events assigned to specific User IDs
+        [Parameter(Mandatory=$false)]
+        [array]$UserIDs,
+
+        #Filter by events assigned to specific Team IDs
+        [Parameter(Mandatory=$false)]
+        [array]$TeamIDs,
+
+        # View only Triggerd incidents
+        [Parameter(Mandatory=$false,ParameterSetName='Default')]
+        [Parameter(ParameterSetName='DateRange')]
+        [Parameter(ParameterSetName='AllDates')]
+        [switch]$Triggered,
+
+        # View only Acknowledged incidents
+        [Parameter(Mandatory=$false,ParameterSetName='Default')]
+        [Parameter(ParameterSetName='DateRange')]
+        [Parameter(ParameterSetName='AllDates')]
+        [switch]$Acknowledged,
+           
+        # View only Resolved incidents
+        [Parameter(Mandatory=$false,ParameterSetName='Default')]
+        [Parameter(ParameterSetName='DateRange')]
+        [Parameter(ParameterSetName='AllDates')]
+        [switch]$Resolved,
+
+        [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
+        [string]$Since,
+
+        [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
+        [string]$Until,
+
+        [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
+        [ValidateSet('all')]
+        [string]$DateRange,
+
+        #Search for specific incident
+        [Parameter(Mandatory=$false,ParameterSetName='IncidentKey')]
+        [ValidateLength(1,255)]
+        [string]$IncidentKey,
+
+        #Set urgencies of incidents
+        [Parameter(Mandatory=$false,ParameterSetName='Default')]
+        [Parameter(ParameterSetName='DateRange')]
+        [Parameter(ParameterSetName='AllDates')]
+        [switch]$HighPriority,
+
+        [Parameter(Mandatory=$false,ParameterSetName='Default')]
+        [Parameter(ParameterSetName='DateRange')]
+        [Parameter(ParameterSetName='AllDates')]
+        [switch]$LowPriority,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateSet('users',
+                     'services',
+                     'first_trigger_log_entries',
+                     'escalation_policies',
+                     'teams',
+                     'assignees',
+                     'acknowledgers',
+                     'priorities',
+                     'response_bridge')]
+        [array]$IncludeAdditionDetails
 
     )
         
-    $query = $null
-   
-   if($Resolved)
-   {
-       $query = '?statuses%5B%5D=resolved'
+    []
+    $Path = '/incidents?'
+    $BuildQuery = @{}
+   #Build status query
+   if($Resolved){
+       $StatusQuery = 'statuses%5B%5D=resolved'
    }
 
-   if($Acknowledged)
-   {
-       $query = '?statuses%5B%5D=acknowledged'
+   if($Acknowledged){
+       $StatusQuery = 'statuses%5B%5D=acknowledged'
    }
 
-   if($Triggerd)
-   {
-       $query = '?statuses%5B%5D=triggered'
+   if($Triggered){
+       $StatusQuery = 'statuses%5B%5D=triggered'
    }
 
+   #Build time zone query
+   if($time_zone){
+        $timezonequery = "&time_zone=$time_zone"
+   }else{
+        $timezonequery = "&time_zone=UTC"
+   }
    $Headers = @{
    
         'Accept' = 'application/vnd.pagerduty+json;version=2'
@@ -74,7 +136,7 @@ function Get-PagerdutyIncident {
    
    }  
 
-   $results = Invoke-RestMethod -Uri ('https://' + 'api.pagerduty.com/incidents' +$query + "&time_zone=$time_zone") -method GET -ContentType 'application/json' -Headers $Headers
+   $results = Invoke-RestMethod -Uri ('https://' + 'api.pagerduty.com' +$StatusQuery + ) -method GET -ContentType 'application/json' -Headers $Headers
    
    $results.incidents | Select-Object incident_number,incident_key,status,trigger_summary_data
 
