@@ -99,23 +99,24 @@ $QueryParams = @{}
 
 
 foreach($Key in $PSBoundParameters.Keys){
-     
-     if($Key -eq 'APIKey'){
-         continue
-     }
+        
+    if($Key -eq 'APIKey'){
+        continue
+    }
+    #Convert dates into ISO 8601
+    if($($PSBoundParameters.$Key.GetTypeCode()) -eq 'DateTime'){
+    
+       $Value = Get-Date -Date $PSBoundParameters.$Key -Format "o"
+       $BuildQuery.$($Key.ToLower()) = $Value
 
-     if($PSBoundParameters.$Key.GetType().BaseType.Name -eq 'Array'){
-     
-         $QueryParams.$($Key) = $PSBoundParameters.$Key
-      
-         
-     }else{
-         
-         $QueryParams.$($Key) = $PSBoundParameters.$Key   
-     
-     }
-
+    }else{
+        
+       $BuildQuery.$($Key.ToLower()) = $PSBoundParameters.$Key 
+    
+    }   
 }
+
+return $BuildQuery
    #Build status query
    if($Resolved){
        $StatusQuery = 'statuses%5B%5D=resolved'
