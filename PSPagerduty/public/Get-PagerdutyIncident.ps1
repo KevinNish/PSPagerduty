@@ -39,14 +39,27 @@ function Get-PagerdutyIncident {
     [Parameter(ParameterSetName='DateRange')]
     [Parameter(ParameterSetName='AllDates')]
     [switch]$Triggered,
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
     [switch]$Acknowledged,
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
     [switch]$Resolved,
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
     [switch]$HighPriority,
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
     [switch]$LowPriority,
     
 
     [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
     [string]$Since,
+    [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
     [string]$Until,
 
     [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
@@ -58,7 +71,6 @@ function Get-PagerdutyIncident {
     [ValidateLength(1,255)]
     [string]$IncidentKey,
 
-    [Parameter(Mandatory=$false)]
     [string]$Timezone,
     [array]$ServiceIDs,
     [array]$UserIDs,
@@ -75,6 +87,7 @@ function Get-PagerdutyIncident {
     [array]$IncludeAdditionDetails
 
 )
+        
         
     []
     $Path = '/incidents?'
