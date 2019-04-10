@@ -32,29 +32,24 @@ function Get-PagerdutyIncident {
 
     
     [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
     [string]$APIKey,
 
     # View only Triggerd incidents
     [Parameter(Mandatory=$false,ParameterSetName='Default')]
     [Parameter(ParameterSetName='DateRange')]
     [Parameter(ParameterSetName='AllDates')]
-    [switch]$Triggered,
+    [ValidateSet('Triggered',
+                 'Acknowledged',
+                 'Resolved')]
+    [array]$Statuses,
+
     [Parameter(Mandatory=$false,ParameterSetName='Default')]
     [Parameter(ParameterSetName='DateRange')]
     [Parameter(ParameterSetName='AllDates')]
-    [switch]$Acknowledged,
-    [Parameter(Mandatory=$false,ParameterSetName='Default')]
-    [Parameter(ParameterSetName='DateRange')]
-    [Parameter(ParameterSetName='AllDates')]
-    [switch]$Resolved,
-    [Parameter(Mandatory=$false,ParameterSetName='Default')]
-    [Parameter(ParameterSetName='DateRange')]
-    [Parameter(ParameterSetName='AllDates')]
-    [switch]$HighPriority,
-    [Parameter(Mandatory=$false,ParameterSetName='Default')]
-    [Parameter(ParameterSetName='DateRange')]
-    [Parameter(ParameterSetName='AllDates')]
-    [switch]$LowPriority,
+    [ValidateSet('High',
+                 'Low')]
+    [array]$Urgencies,
     
 
     [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
@@ -71,7 +66,7 @@ function Get-PagerdutyIncident {
     [ValidateLength(1,255)]
     [string]$IncidentKey,
 
-    [string]$Timezone,
+    [string]$Timezone = 'UTC',
     [array]$ServiceIDs,
     [array]$UserIDs,
     [array]$TeamIDs,
@@ -84,10 +79,9 @@ function Get-PagerdutyIncident {
             'acknowledgers',
             'priorities',
             'response_bridge')]
-    [array]$IncludeAdditionDetails
+    [array]$IncludeAdditionalDetails
 
-)
-        
+)   
         
     []
     $Path = '/incidents?'
