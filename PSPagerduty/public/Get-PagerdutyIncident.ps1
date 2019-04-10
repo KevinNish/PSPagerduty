@@ -83,9 +83,39 @@ function Get-PagerdutyIncident {
 
 )   
         
-    []
-    $Path = '/incidents?'
-    $BuildQuery = @{}
+
+[string]$BaseURL = 'https://api.pagerduty.com/'
+[string]$APIEndpoint = 'incidents?'
+[string]$HTTPMethod = 'GET'
+[string]$ContentType = 'application/json'
+$Headers = @{
+
+ 'Accept' = 'application/vnd.pagerduty+json;version=2'
+ 'Authorization' = "Token token=$APIKey"
+
+}
+
+$QueryParams = @{}
+
+
+foreach($Key in $PSBoundParameters.Keys){
+     
+     if($Key -eq 'APIKey'){
+         continue
+     }
+
+     if($PSBoundParameters.$Key.GetType().BaseType.Name -eq 'Array'){
+     
+         $QueryParams.$($Key) = $PSBoundParameters.$Key
+      
+         
+     }else{
+         
+         $QueryParams.$($Key) = $PSBoundParameters.$Key   
+     
+     }
+
+}
    #Build status query
    if($Resolved){
        $StatusQuery = 'statuses%5B%5D=resolved'
