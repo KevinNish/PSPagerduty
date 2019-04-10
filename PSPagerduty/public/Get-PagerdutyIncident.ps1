@@ -29,83 +29,52 @@ function Get-PagerdutyIncident {
    [alias('Get-Incidents')]
 
    param(
-        # API key for your PagerDuty account
-        [Parameter(Mandatory=$true)]
-        [string]$APIKey,
-        
-        # Timezone, default is UTC, will work in most cases
-        [Parameter(Mandatory=$false)]
-        [string]$Timezone,
 
-        #Filter by events associated with specific Service IDs
-        [Parameter(Mandatory=$false)]
-        [array]$ServiceIDs,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$APIKey,
 
-        #Filter by events assigned to specific User IDs
-        [Parameter(Mandatory=$false)]
-        [array]$UserIDs,
+    # View only Triggerd incidents
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
+    [switch]$Triggered,
+    [switch]$Acknowledged,
+    [switch]$Resolved,
+    [switch]$HighPriority,
+    [switch]$LowPriority,
+    
 
-        #Filter by events assigned to specific Team IDs
-        [Parameter(Mandatory=$false)]
-        [array]$TeamIDs,
+    [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
+    [string]$Since,
+    [string]$Until,
 
-        # View only Triggerd incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$Triggered,
+    [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
+    [ValidateSet('all')]
+    [string]$DateRange,
 
-        # View only Acknowledged incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$Acknowledged,
-           
-        # View only Resolved incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$Resolved,
+    #Search for specific incident
+    [Parameter(Mandatory=$false,ParameterSetName='IncidentKey')]
+    [ValidateLength(1,255)]
+    [string]$IncidentKey,
 
-        [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
-        [string]$Since,
+    [Parameter(Mandatory=$false)]
+    [string]$Timezone,
+    [array]$ServiceIDs,
+    [array]$UserIDs,
+    [array]$TeamIDs,
+    [ValidateSet('users',
+            'services',
+            'first_trigger_log_entries',
+            'escalation_policies',
+            'teams',
+            'assignees',
+            'acknowledgers',
+            'priorities',
+            'response_bridge')]
+    [array]$IncludeAdditionDetails
 
-        [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
-        [string]$Until,
-
-        [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
-        [ValidateSet('all')]
-        [string]$DateRange,
-
-        #Search for specific incident
-        [Parameter(Mandatory=$false,ParameterSetName='IncidentKey')]
-        [ValidateLength(1,255)]
-        [string]$IncidentKey,
-
-        #Set urgencies of incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$HighPriority,
-
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$LowPriority,
-
-        [Parameter(Mandatory=$false)]
-        [ValidateSet('users',
-                     'services',
-                     'first_trigger_log_entries',
-                     'escalation_policies',
-                     'teams',
-                     'assignees',
-                     'acknowledgers',
-                     'priorities',
-                     'response_bridge')]
-        [array]$IncludeAdditionDetails
-
-    )
+)
         
     []
     $Path = '/incidents?'
