@@ -59,17 +59,17 @@ function Get-PagerdutyIncident {
 
     [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
     [ValidateSet('all')]
-    [string]$DateRange,
+    [string]$Date_Range,
 
     #Search for specific incident
     [Parameter(Mandatory=$false,ParameterSetName='IncidentKey')]
     [ValidateLength(1,255)]
-    [string]$IncidentKey,
+    [string]$Incident_Key,
 
-    [string]$Timezone = 'UTC',
-    [array]$ServiceIDs,
-    [array]$UserIDs,
-    [array]$TeamIDs,
+    [string]$Time_zone = 'UTC',
+    [array]$Service_IDs,
+    [array]$User_IDs,
+    [array]$Team_IDs,
     [ValidateSet('users',
             'services',
             'first_trigger_log_entries',
@@ -79,7 +79,7 @@ function Get-PagerdutyIncident {
             'acknowledgers',
             'priorities',
             'response_bridge')]
-    [array]$IncludeAdditionalDetails
+    [array]$Include
 
 )   
         
