@@ -29,87 +29,93 @@ function Get-PagerdutyIncident {
    [alias('Get-Incidents')]
 
    param(
-        # API key for your PagerDuty account
-        [Parameter(Mandatory=$true)]
-        [string]$APIKey,
+
+    
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$APIKey,
+
+    # View only Triggerd incidents
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
+    [ValidateSet('Triggered',
+                 'Acknowledged',
+                 'Resolved')]
+    [array]$Statuses,
+
+    [Parameter(Mandatory=$false,ParameterSetName='Default')]
+    [Parameter(ParameterSetName='DateRange')]
+    [Parameter(ParameterSetName='AllDates')]
+    [ValidateSet('High',
+                 'Low')]
+    [array]$Urgencies,
+    
+
+    [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
+    [string]$Since,
+    [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
+    [string]$Until,
+
+    [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
+    [ValidateSet('all')]
+    [string]$Date_Range,
+
+    #Search for specific incident
+    [Parameter(Mandatory=$false,ParameterSetName='IncidentKey')]
+    [ValidateLength(1,255)]
+    [string]$Incident_Key,
+
+    [string]$Time_zone = 'UTC',
+    [array]$Service_IDs,
+    [array]$User_IDs,
+    [array]$Team_IDs,
+    [ValidateSet('users',
+            'services',
+            'first_trigger_log_entries',
+            'escalation_policies',
+            'teams',
+            'assignees',
+            'acknowledgers',
+            'priorities',
+            'response_bridge')]
+    [array]$Include
+
+)   
         
-        # Timezone, default is UTC, will work in most cases
-        [Parameter(Mandatory=$false)]
-        [string]$Timezone,
 
-        #Filter by events associated with specific Service IDs
-        [Parameter(Mandatory=$false)]
-        [array]$ServiceIDs,
+[string]$BaseURL = 'https://api.pagerduty.com/'
+[string]$APIEndpoint = 'incidents?'
+[string]$HTTPMethod = 'GET'
+[string]$ContentType = 'application/json'
+$Headers = @{
 
-        #Filter by events assigned to specific User IDs
-        [Parameter(Mandatory=$false)]
-        [array]$UserIDs,
+ 'Accept' = 'application/vnd.pagerduty+json;version=2'
+ 'Authorization' = "Token token=$APIKey"
 
-        #Filter by events assigned to specific Team IDs
-        [Parameter(Mandatory=$false)]
-        [array]$TeamIDs,
+}
 
-        # View only Triggerd incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$Triggered,
+$QueryParams = @{}
 
-        # View only Acknowledged incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$Acknowledged,
-           
-        # View only Resolved incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$Resolved,
 
-        [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
-        [string]$Since,
+foreach($Key in $PSBoundParameters.Keys){
+     
+     if($Key -eq 'APIKey'){
+         continue
+     }
 
-        [Parameter(Mandatory=$false,ParameterSetName='DateRange')]
-        [string]$Until,
+     if($PSBoundParameters.$Key.GetType().BaseType.Name -eq 'Array'){
+     
+         $QueryParams.$($Key) = $PSBoundParameters.$Key
+      
+         
+     }else{
+         
+         $QueryParams.$($Key) = $PSBoundParameters.$Key   
+     
+     }
 
-        [Parameter(Mandatory=$false,ParameterSetName='AllDates')]
-        [ValidateSet('all')]
-        [string]$DateRange,
-
-        #Search for specific incident
-        [Parameter(Mandatory=$false,ParameterSetName='IncidentKey')]
-        [ValidateLength(1,255)]
-        [string]$IncidentKey,
-
-        #Set urgencies of incidents
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$HighPriority,
-
-        [Parameter(Mandatory=$false,ParameterSetName='Default')]
-        [Parameter(ParameterSetName='DateRange')]
-        [Parameter(ParameterSetName='AllDates')]
-        [switch]$LowPriority,
-
-        [Parameter(Mandatory=$false)]
-        [ValidateSet('users',
-                     'services',
-                     'first_trigger_log_entries',
-                     'escalation_policies',
-                     'teams',
-                     'assignees',
-                     'acknowledgers',
-                     'priorities',
-                     'response_bridge')]
-        [array]$IncludeAdditionDetails
-
-    )
-        
-    []
-    $Path = '/incidents?'
-    $BuildQuery = @{}
+}
    #Build status query
    if($Resolved){
        $StatusQuery = 'statuses%5B%5D=resolved'
