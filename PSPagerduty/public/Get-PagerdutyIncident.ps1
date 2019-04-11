@@ -84,68 +84,22 @@ function Get-PagerdutyIncident {
 )   
         
 
-[string]$BaseURL = 'https://api.pagerduty.com/'
-[string]$APIEndpoint = 'incidents?'
-[string]$HTTPMethod = 'GET'
-[string]$ContentType = 'application/json'
-$Headers = @{
+    [string]$BaseURL = 'https://api.pagerduty.com/'
+    [string]$APIEndpoint = 'incidents'
+    [string]$HTTPMethod = 'GET'
+    [string]$ContentType = 'application/json'
+    $Headers = @{
 
- 'Accept' = 'application/vnd.pagerduty+json;version=2'
- 'Authorization' = "Token token=$APIKey"
+    'Accept' = 'application/vnd.pagerduty+json;version=2'
+    'Authorization' = "Token token=$APIKey"
 
-}
-
-$QueryParams = @{}
-
-
-foreach($Key in $PSBoundParameters.Keys){
-        
-    if($Key -eq 'APIKey'){
-        continue
     }
-    #Convert dates into ISO 8601
-    if($($PSBoundParameters.$Key.GetTypeCode()) -eq 'DateTime'){
+
+    $Params = $PSBoundParameters | ConvertTo-ValidParameters
+
+    $results = Invoke-RestMethod -Uri ($BaseURL + $APIEndpoint + $Params) -method $HTTPMethod -ContentType $ContentType -Headers $Headers
     
-       $Value = Get-Date -Date $PSBoundParameters.$Key -Format "o"
-       $BuildQuery.$($Key.ToLower()) = $Value
-
-    }else{
-        
-       $BuildQuery.$($Key.ToLower()) = $PSBoundParameters.$Key 
-    
-    }   
-}
-
-return $BuildQuery
-   #Build status query
-   if($Resolved){
-       $StatusQuery = 'statuses%5B%5D=resolved'
-   }
-
-   if($Acknowledged){
-       $StatusQuery = 'statuses%5B%5D=acknowledged'
-   }
-
-   if($Triggered){
-       $StatusQuery = 'statuses%5B%5D=triggered'
-   }
-
-   #Build time zone query
-   if($time_zone){
-        $timezonequery = "&time_zone=$time_zone"
-   }else{
-        $timezonequery = "&time_zone=UTC"
-   }
-   $Headers = @{
-   
-        'Accept' = 'application/vnd.pagerduty+json;version=2'
-        'Authorization' = "Token token=$APIKey"
-   
-   }  
-
-   $results = Invoke-RestMethod -Uri ('https://' + 'api.pagerduty.com' +$StatusQuery + ) -method GET -ContentType 'application/json' -Headers $Headers
-   
-   $results.incidents | Select-Object incident_number,incident_key,status,trigger_summary_data
+    return $results 
 
 }
 
